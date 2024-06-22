@@ -9,6 +9,13 @@ namespace LocalFriendzApi.Infrastructure.Data
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<AreaCode> AreasCode { get; set; }
 
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseInMemoryDatabase("DB_FIAP_ARQUITETO");
+        }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
