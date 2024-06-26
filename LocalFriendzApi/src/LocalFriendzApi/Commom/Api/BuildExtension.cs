@@ -13,15 +13,21 @@ namespace LocalFriendzApi.Commom.Api
 {
     public static class BuildExtension
     {
-       
+        public static void AddConfiguration(this WebApplicationBuilder builder)
+        {
+            ApiConfiguration.ConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+        }
+
         public static void AddDataContexts(this WebApplicationBuilder builder)
         {
+            builder
+                .Services
+                .AddDbContext<AppDbContext>(
+                    x =>
+                    {
+                        x.UseSqlServer(ApiConfiguration.ConnectionString);
+                    });
 
-            var useInMemoryDatabase = builder.Configuration.GetValue<bool>("UseInMemoryDatabase");
-
-                builder.Services.AddDbContext<AppDbContext>(options =>
-                    options.UseInMemoryDatabase("DB_FIAP_ARQUITETO"));
-         
         }
 
         public static void AddServices(this WebApplicationBuilder builder)
@@ -33,8 +39,9 @@ namespace LocalFriendzApi.Commom.Api
             builder
                 .Services
                 .AddScoped<IContactRepository, ContactRepository>();
+
             builder
-            .Services
+                .Services
                 .AddScoped<IInfoDDDIntegration, InfoDDDIntegration>();
         }
 

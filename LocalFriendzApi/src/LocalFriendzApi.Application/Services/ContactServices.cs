@@ -23,6 +23,8 @@ namespace LocalFriendzApi.Application.Services
 
             if (await _infoDDDIntegration.GetDDDInfo(request.CodeRegion))
             {
+           
+
                 var contact = Contact.RequestMapper(request);
                 var response = await _contactRepository.Create(contact);
 
@@ -31,6 +33,12 @@ namespace LocalFriendzApi.Application.Services
 
             return null;
         }
+
+        private void ValidaCadastraDDD(int codeRegion)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<PagedResponse<List<Contact>?>> GetAll(GetAllContactRequest request)
         {
             var response = await _contactRepository.GetAll(request);
