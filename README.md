@@ -1,8 +1,5 @@
 # Tech Challenger - Cadastro de Contatos Regionais
 
-Responsável: Jefferson Ricardo
-Tags: Documentação Técnica
-
 # Introdução
 
 O Tech Challenge desta fase será desenvolver um aplicativo utilizando a plataforma .Net 8 para cadastro de contatos regionais, considerando a persistência de dados e a qualidade do software.

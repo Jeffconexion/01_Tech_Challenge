@@ -2,6 +2,7 @@
 using LocalFriendzApi.Application.Services;
 using LocalFriendzApi.Core.Configuration;
 using LocalFriendzApi.Core.IRepositories;
+using LocalFriendzApi.Core.Logging;
 using LocalFriendzApi.Infrastructure.Data;
 using LocalFriendzApi.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +45,15 @@ namespace LocalFriendzApi.Commom.Api
         public static void AddCrossOrigin(this WebApplicationBuilder builder)
         {
             // inserir implementação do cross
+        }
+
+        public static void AddLogging(this WebApplicationBuilder builder)
+        {
+            builder.Logging.ClearProviders();
+            builder.Logging.AddProvider(new CustomLoggerProvider(new CustomLoggerProviderConfiguration
+            {
+                LogLevel = LogLevel.Information
+            }));
         }
     }
 }

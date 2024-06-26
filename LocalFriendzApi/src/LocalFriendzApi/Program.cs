@@ -1,5 +1,6 @@
 using LocalFriendzApi.Commom.Api;
 using LocalFriendzApi.Endpoints;
+using LocalFriendzApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddDataContexts();
@@ -15,6 +16,7 @@ if (app.Environment.IsDevelopment())
     app.ConfigureDevEnvironment();
 }
 
+app.UseLoggingMiddleware();
 app.UseHttpsRedirection();
 
 app.Run();

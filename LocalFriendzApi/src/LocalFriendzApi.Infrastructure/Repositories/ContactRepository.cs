@@ -4,22 +4,39 @@ using LocalFriendzApi.Core.Requests.Contact;
 using LocalFriendzApi.Core.Responses;
 using LocalFriendzApi.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace LocalFriendzApi.Infrastructure.Repositories
 {
-    public class ContactRepository(AppDbContext context) : IContactRepository
+    public class ContactRepository : IContactRepository
     {
+
+        private readonly ILogger<ContactRepository> _logger;
+        private readonly AppDbContext _context;
+
+        public ContactRepository(ILogger<ContactRepository> logger,
+                                 AppDbContext context)
+        {
+            _logger = logger;
+            _context = context;
+        }
+
         public async Task<Response<Contact?>> Create(Contact contact)
         {
             try
             {
-                await context.Contacts.AddAsync(contact);
-                await context.SaveChangesAsync();
+                _logger.LogInformation("Create method called for Contact: {ContactName}", contact.Name);
+
+                await _context.Contacts.AddAsync(contact);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Contact created successfully: {ContactId}", contact.Id);
 
                 return new Response<Contact?>(contact, 201, "Contact created with sucess!");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while creating a contact.");
                 return new Response<Contact?>(null, 500, "Internal server erro.");
             }
         }
@@ -28,12 +45,15 @@ namespace LocalFriendzApi.Infrastructure.Repositories
         {
             try
             {
-                var contact = await context.Contacts
+                _logger.LogInformation("Update method called for Contact ID: {ContactId}", id);
+
+                var contact = await _context.Contacts
                                         .Include(a => a.AreaCode)
                                         .FirstOrDefaultAsync(a => a.Id == id);
 
                 if (contact is null)
                 {
+                    _logger.LogWarning("Contact not found: {ContactId}", id);
                     return new Response<Contact?>(null, 404, "Contact not found!");
                 }
 
@@ -43,13 +63,15 @@ namespace LocalFriendzApi.Infrastructure.Repositories
                 contact.Phone = request.Phone;
                 contact.AreaCode.CodeRegion = request.AreaCode.CodeRegion;
 
-                context.Contacts.Update(contact);
-                await context.SaveChangesAsync();
+                _context.Contacts.Update(contact);
+                await _context.SaveChangesAsync();
 
+                _logger.LogInformation("Contact updated successfully: {ContactId}", id);
                 return new Response<Contact?>(contact, message: "Contact update with sucess!");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while updating the contact with ID: {ContactId}", id);
                 return new Response<Contact?>(null, 500, "Internal Server Erro!");
             }
         }
@@ -58,22 +80,29 @@ namespace LocalFriendzApi.Infrastructure.Repositories
         {
             try
             {
-                var contact = await context.Contacts
+                _logger.LogInformation("Delete method called for Contact ID: {ContactId}", id);
+
+                var contact = await _context.Contacts
                                         .Include(a => a.AreaCode)
                                         .FirstOrDefaultAsync(a => a.Id == id);
 
                 if (contact is null)
                 {
+                    _logger.LogWarning("Contact not found: {ContactId}", id);
                     return new Response<Contact?>(null, 404, "Contact not found!");
                 }
 
-                context.Contacts.Remove(contact);
-                await context.SaveChangesAsync();
+                _context.Contacts.Remove(contact);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Contact deleted successfully: {ContactId}", id);
+
 
                 return new Response<Contact?>(contact, message: "Removed contact with sucess!");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while deleting the contact with ID: {ContactId}", id);
                 return new Response<Contact?>(null, 500, "Internal server erro!");
             }
         }
@@ -82,7 +111,9 @@ namespace LocalFriendzApi.Infrastructure.Repositories
         {
             try
             {
-                var query = await context
+                _logger.LogInformation("GetAll method called. PageNumber: {PageNumber}, PageSize: {PageSize}", request.PageNumber, request.PageSize);
+
+                var query = await _context
                                   .Contacts
                                   .AsNoTracking()
                                   .Include(a => a.AreaCode)
@@ -96,14 +127,17 @@ namespace LocalFriendzApi.Infrastructure.Repositories
 
                 var count = query.Count();
 
+                _logger.LogInformation("GetAll method executed successfully. Total contacts: {Count}", count);
+
                 return new PagedResponse<List<Contact>?>(
                     contacts,
                     count,
                     request.PageNumber,
                     request.PageSize);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while getting all contacts.");
                 return new PagedResponse<List<Contact>?>(null, 500, "Internal Server Erro!");
             }
         }
@@ -112,18 +146,28 @@ namespace LocalFriendzApi.Infrastructure.Repositories
         {
             try
             {
-                var contact = await context
+                _logger.LogInformation("GetContactByFilter method called with CodeRegion: {CodeRegion}", codeRegion);
+
+                var contact = await _context
                     .Contacts
                     .AsNoTracking()
                     .Include(a => a.AreaCode)
                     .FirstOrDefaultAsync(x => x.AreaCode.CodeRegion.Equals(codeRegion));
 
-                return contact is null
-                    ? new Response<Contact?>(null, 404, "Not found contact.")
-                    : new Response<Contact?>(contact);
+                if (contact is null)
+                {
+                    _logger.LogWarning("No contact found with CodeRegion: {CodeRegion}", codeRegion);
+
+                    return new Response<Contact?>(null, 404, "Not found contact.");
+                }
+
+                _logger.LogInformation("Contact found with CodeRegion: {CodeRegion}, Contact ID: {ContactId}", codeRegion, contact.Id);
+
+                return new Response<Contact?>(contact);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while getting contact with CodeRegion: {CodeRegion}", codeRegion);
                 return new Response<Contact?>(null, 500, "Internal server erro");
             }
         }
