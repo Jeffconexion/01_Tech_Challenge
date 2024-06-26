@@ -1,4 +1,5 @@
 ﻿using LocalFriendzApi.Application.IServices;
+using LocalFriendzApi.Core.IIntegration;
 using LocalFriendzApi.Core.IRepositories;
 using LocalFriendzApi.Core.Models;
 using LocalFriendzApi.Core.Requests.Contact;
@@ -9,18 +10,26 @@ namespace LocalFriendzApi.Application.Services
     public class ContactServices : IContactServices
     {
         private readonly IContactRepository? _contactRepository;
+        private readonly IInfoDDDIntegration? _infoDDDIntegration;
 
-        public ContactServices(IContactRepository? contactRepository)
+        public ContactServices(IContactRepository? contactRepository, IInfoDDDIntegration infoDDDIntegration)
         {
             _contactRepository = contactRepository;
+            _infoDDDIntegration = infoDDDIntegration;
         }
 
         public async Task<Response<Contact?>> CreateAsync(CreateContactRequest request)
         {
-            var contact = Contact.RequestMapper(request);
-            var response = await _contactRepository.Create(contact);
 
-            return response;
+            if (await _infoDDDIntegration.GetDDDInfo(request.CodeRegion))
+            {
+                var contact = Contact.RequestMapper(request);
+                var response = await _contactRepository.Create(contact);
+
+                return response;
+            }
+
+            return null;
         }
         public async Task<PagedResponse<List<Contact>?>> GetAll(GetAllContactRequest request)
         {

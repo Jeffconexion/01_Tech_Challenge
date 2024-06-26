@@ -1,9 +1,11 @@
 ﻿using LocalFriendzApi.Application.IServices;
 using LocalFriendzApi.Application.Services;
 using LocalFriendzApi.Core.Configuration;
+using LocalFriendzApi.Core.IIntegration;
 using LocalFriendzApi.Core.IRepositories;
 using LocalFriendzApi.Core.Logging;
 using LocalFriendzApi.Infrastructure.Data;
+using LocalFriendzApi.Infrastructure.Integration;
 using LocalFriendzApi.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +33,9 @@ namespace LocalFriendzApi.Commom.Api
             builder
                 .Services
                 .AddScoped<IContactRepository, ContactRepository>();
+            builder
+            .Services
+                .AddScoped<IInfoDDDIntegration, InfoDDDIntegration>();
         }
 
         public static void AddDocumentation(this WebApplicationBuilder builder)
