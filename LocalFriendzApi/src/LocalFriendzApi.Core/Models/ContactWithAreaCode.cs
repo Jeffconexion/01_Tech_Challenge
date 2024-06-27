@@ -1,14 +1,11 @@
-﻿using LocalFriendzApi.Core.Models;
-
-namespace LocalFriendzApi.Core.Requests.Contact
+﻿namespace LocalFriendzApi.Core.Models
 {
-    public class UpdateContactRequest
+    public class ContactWithAreaCode
     {
         public string? Name { get; set; }
         public string? Phone { get; set; }
         public string? Email { get; set; }
-
         public int CodeRegion { get; set; }
-
     }
+
 }

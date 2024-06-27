@@ -20,26 +20,33 @@ namespace LocalFriendzApi.Application.Services
 
         public async Task<Response<Contact?>> CreateAsync(CreateContactRequest request)
         {
+          
+                if (await _infoDDDIntegration.GetDDDInfo(request.CodeRegion))
+                {
+                    if (await EnsureDDDExists(request.CodeRegion) != null)
+                    {
 
-            if (await _infoDDDIntegration.GetDDDInfo(request.CodeRegion))
-            {
+                        Contact contact = new();
+                        contact.Name = request.Name;
+                        contact.Phone = request.Phone;
+                        contact.Email = request.Email;
+                        contact.AreaCodeId = (Guid)await EnsureDDDExists(request.CodeRegion);
+
+                        var response = await _contactRepository.Create(contact);
+
+                        return response;
+                    }
+                }
+
+                return null;
+
+            
            
-
-                var contact = Contact.RequestMapper(request);
-                var response = await _contactRepository.Create(contact);
-
-                return response;
-            }
-
-            return null;
         }
 
-        private void ValidaCadastraDDD(int codeRegion)
-        {
-            throw new NotImplementedException();
-        }
 
-        public async Task<PagedResponse<List<Contact>?>> GetAll(GetAllContactRequest request)
+
+        public async Task<PagedResponse<List<ContactWithAreaCode>?>> GetAll(GetAllContactRequest request)
         {
             var response = await _contactRepository.GetAll(request);
             return response;
@@ -47,8 +54,27 @@ namespace LocalFriendzApi.Application.Services
 
         public async Task<Response<Contact?>> PutContact(Guid id, UpdateContactRequest request)
         {
-            var response = await _contactRepository.Update(id, request);
-            return response;
+
+            if (await _infoDDDIntegration.GetDDDInfo(request.CodeRegion))
+            {
+
+                var idAreaCode = await EnsureDDDExists(request.CodeRegion);
+                if (idAreaCode != null)
+                {
+                    Contact contact = new();
+                    contact.Id = id;
+                    contact.Phone = request.Phone;
+                    contact.Email = request.Email;
+                    contact.Phone = request.Phone;
+                    contact.Name = request.Name;
+                    contact.AreaCodeId = (Guid)idAreaCode;
+
+                    var response = await _contactRepository.Update(id, contact);
+                    return response;
+                }
+            }
+
+            return null;
         }
 
         public async Task<Response<Contact?>> DeleteContact(Guid id)
@@ -57,10 +83,26 @@ namespace LocalFriendzApi.Application.Services
             return response;
         }
 
-        public async Task<Response<Contact?>> GetByFilter(string codeRegion)
+        public async Task<Response<List<ContactWithAreaCode>?>> GetByFilter(int codeRegion)
         {
             var response = await _contactRepository.GetContactByFilter(codeRegion);
             return response;
+        }
+
+
+        private async Task<Guid?> EnsureDDDExists(int codeRegion)
+        {
+            Guid? idAreaCode = await _contactRepository.GetAreaCodeIdByDDD(codeRegion);
+            if (idAreaCode == null)
+            {
+                AreaCode areaCode = new();
+                areaCode.CodeRegion = codeRegion;
+                var result = await _contactRepository.CreateDDD(areaCode);
+                return result.Data.IdAreaCode;
+            }
+
+            return idAreaCode;
+
         }
 
     }

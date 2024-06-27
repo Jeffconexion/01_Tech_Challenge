@@ -17,7 +17,7 @@ namespace LocalFriendzApi.Infrastructure.Data.Mappings
             builder.Property(c => c.CodeRegion)
                 .IsRequired(true)
                 .HasColumnName("code_region")
-                .HasColumnType("VARCHAR")
+                .HasColumnType("int")
                 .HasMaxLength(2);
         }
     }

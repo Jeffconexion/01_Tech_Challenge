@@ -7,9 +7,9 @@ namespace LocalFriendzApi.Application.IServices
     public interface IContactServices
     {
         Task<Response<Contact?>> CreateAsync(CreateContactRequest request);
-        Task<PagedResponse<List<Contact>?>> GetAll(GetAllContactRequest request);
+        Task<PagedResponse<List<ContactWithAreaCode>?>> GetAll(GetAllContactRequest request);
         Task<Response<Contact?>> PutContact(Guid id, UpdateContactRequest request);
         Task<Response<Contact?>> DeleteContact(Guid id);
-        Task<Response<Contact?>> GetByFilter(string codeRegion);
+        Task<Response<List<ContactWithAreaCode>?>> GetByFilter(int codeRegion);
     }
 }

@@ -12,9 +12,10 @@ namespace LocalFriendzApi.Endpoints
         {
             app.MapPost("api/create-contact", async (IContactServices contactServices, CreateContactRequest request) =>
             {
+               
+                    var response = await contactServices.CreateAsync(request);
+                    return response;
 
-                var response = await contactServices.CreateAsync(request);
-                return response;
 
             }).WithOpenApi()
             .WithTags("Posts")
@@ -40,7 +41,7 @@ namespace LocalFriendzApi.Endpoints
             .Produces((int)HttpStatusCode.InternalServerError)
             .Produces<PagedResponse<List<Contact>?>>();
 
-            app.MapGet("api/list-by-filter", async (IContactServices contactServices, string codeRegion) =>
+            app.MapGet("api/list-by-filter", async (IContactServices contactServices, int codeRegion) =>
             {
                 var response = await contactServices.GetByFilter(codeRegion);
                 return response;
