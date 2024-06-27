@@ -3,9 +3,11 @@ using LocalFriendzApi.Endpoints;
 using LocalFriendzApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddConfiguration();
 builder.AddDataContexts();
 builder.AddDocumentation();
 builder.AddServices();
+
 
 var app = builder.Build();
 app.MapEndpoints();
